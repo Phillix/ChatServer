@@ -82,10 +82,7 @@ public class UserDao extends Dao implements UserDaoInterface {
 
         try {
             con          = getConnection();
-            String query = "INSERT INTO " +
-                           TABLE_NAME + " (" +
-                           PASSWORD   + ", " +
-                           USER_NAME  + ")";
+            String query = "INSERT INTO " + TABLE_NAME + " (" + PASSWORD + ", " + USER_NAME  + ")";
 
             ps = con.prepareStatement(query);
             ps.setString(1, u.getPassword());

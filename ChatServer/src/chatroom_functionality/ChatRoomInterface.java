@@ -8,8 +8,8 @@ import java.rmi.RemoteException;
 
 public interface ChatRoomInterface extends Remote
 {
-    public boolean addQuote(Message q) throws RemoteException;
-    public Message getQuote() throws RemoteException;
+    public boolean addMessage(Message m) throws RemoteException;
+    public Message getMessage() throws RemoteException;
     
     public boolean register(User u) throws RemoteException;
     public boolean login(User u) throws RemoteException;

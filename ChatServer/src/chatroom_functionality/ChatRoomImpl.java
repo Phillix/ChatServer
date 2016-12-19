@@ -20,11 +20,11 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     }
 
     @Override
-    public boolean addQuote(Message q) throws RemoteException {
+    public boolean addMessage(Message m) throws RemoteException {
         boolean added = false;
         synchronized(quoteList)
         {
-            added = quoteList.add(q);
+            added = quoteList.add(m);
         }
         if(added)
         {
@@ -32,7 +32,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
             {
                 for(ChatRoomClientInterface client : clientList)
                 {
-                    client.newQuoteNotification("New quote added: " + q);
+                    client.newQuoteNotification("New message added: " + m);
                 }
             }
         }
@@ -40,7 +40,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     }
 
     @Override
-    public Message getQuote() throws RemoteException {
+    public Message getMessage() throws RemoteException {
         Random rand = new Random();
         synchronized(quoteList)
         {
