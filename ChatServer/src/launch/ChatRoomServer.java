@@ -1,6 +1,5 @@
 package launch;
 
-import business.User;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
