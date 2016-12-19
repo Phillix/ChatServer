@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterface
 {
-    private final ArrayList<Message> quoteList = new ArrayList();
+    private final ArrayList<Message> chatRoomMessages = new ArrayList();
     private final ArrayList<User> userList  = new ArrayList();
     private final ArrayList<ChatRoomClientInterface> clientList = new ArrayList();
     
@@ -23,9 +23,9 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     @Override
     public boolean addMessage(Message m) throws RemoteException {
         boolean added = false;
-        synchronized(quoteList)
+        synchronized(chatRoomMessages)
         {
-            added = quoteList.add(m);
+            added = chatRoomMessages.add(m);
         }
         if(added)
         {
@@ -33,20 +33,21 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
             {
                 for(ChatRoomClientInterface client : clientList)
                 {
-                    client.newQuoteNotification("New message added: " + m);
+                    client.newQuoteNotification(m.getAuthor() + ": " + m.getText());
                 }
             }
         }
         return added;
     }
 
+    //may not need this method
     @Override
     public Message getMessage() throws RemoteException {
         Random rand = new Random();
-        synchronized(quoteList)
+        synchronized(chatRoomMessages)
         {
-            int choice = rand.nextInt(quoteList.size());
-            return quoteList.get(choice);
+            int choice = rand.nextInt(chatRoomMessages.size());
+            return chatRoomMessages.get(choice);
         }
     }
     
@@ -109,6 +110,20 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
             }
             return false;
         }
+    }
+    
+    @Override
+    public boolean populateUserList() {
+    
+        UserDao uDao = new UserDao();
+        ArrayList<User> dbUserList = uDao.getUsers();
+        if(dbUserList != null && dbUserList.size() > 0) {
+            synchronized(userList) {
+                userList.addAll(dbUserList);
+                return true;
+            }
+        }
+        return false;
     }
 
 }

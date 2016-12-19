@@ -170,7 +170,6 @@ public class UserDao extends Dao implements UserDaoInterface {
     
     /**
      * Used for retrieving all users
-     * @param searchWord String of text to use in searching
      * @return a Collection of successful User matches
      */
     @Override

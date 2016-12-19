@@ -16,4 +16,6 @@ public interface ChatRoomInterface extends Remote
     
     public boolean registerForCallback(ChatRoomClientInterface client) throws RemoteException;
     public boolean unregisterForCallback(ChatRoomClientInterface client) throws RemoteException;
+    
+    public boolean populateUserList();
 }
