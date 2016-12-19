@@ -17,7 +17,7 @@ public class ChatRoomServer {
      */
     public static void main(String[] args) {
         try {
-            ChatRoomImpl quoteObject = new ChatRoomImpl();
+            ChatRoomImpl chatRoomObject = new ChatRoomImpl();
             
             int portNum = 7777;
             startRegistry(portNum);
@@ -25,7 +25,7 @@ public class ChatRoomServer {
             String registryPath = "rmi://localhost:" + portNum;
             String objectLabel = "/chatroomService";
             
-            Naming.rebind(registryPath+objectLabel, quoteObject);
+            Naming.rebind(registryPath+objectLabel, chatRoomObject);
         } catch (RemoteException ex) {
             Logger.getLogger(ChatRoomServer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (MalformedURLException ex) {
