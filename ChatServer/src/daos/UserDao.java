@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import security.UserSecurity;
 
 /**
@@ -165,5 +166,58 @@ public class UserDao extends Dao implements UserDaoInterface {
             }
         }
         return null;
+    }
+    
+    /**
+     * Used for retrieving all users
+     * @param searchWord String of text to use in searching
+     * @return a Collection of successful User matches
+     */
+    @Override
+    public ArrayList<User> getUsers() {
+        
+        Connection con       = null;
+        PreparedStatement ps = null;
+        ResultSet rs         = null;
+        User u               = null;
+        ArrayList<User> users;
+
+        try {
+
+            con = getConnection();
+            ps = con.prepareStatement("SELECT * FROM " + TABLE_NAME);
+            rs = ps.executeQuery();
+            users = new ArrayList<>();
+
+            while(rs.next()) {
+                u = new User();
+                u.setUsername(rs.getString(USER_NAME));
+                u.setPassword(PASSWORD);
+                users.add(u);
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        finally {
+            try {
+                if(ps != null) {
+                    ps.close();
+                }
+                if(con != null) {
+                    freeConnection(con);
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            }
+            catch(SQLException e) {
+                e.printStackTrace();
+                
+                return null;
+            }
+        }
+        return users;
     }
 }    

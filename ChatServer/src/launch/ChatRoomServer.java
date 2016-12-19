@@ -19,11 +19,11 @@ public class ChatRoomServer {
         try {
             ChatRoomImpl quoteObject = new ChatRoomImpl();
             
-            int portNum = 55555;
+            int portNum = 7777;
             startRegistry(portNum);
             
             String registryPath = "rmi://localhost:" + portNum;
-            String objectLabel = "/quoteService";
+            String objectLabel = "/chatroomService";
             
             Naming.rebind(registryPath+objectLabel, quoteObject);
         } catch (RemoteException ex) {

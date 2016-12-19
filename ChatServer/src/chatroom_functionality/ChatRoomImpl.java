@@ -3,6 +3,7 @@ package chatroom_functionality;
 import business.Message;
 import business.User;
 import callback_support.ChatRoomClientInterface;
+import daos.UserDao;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     @Override
     public boolean register(User u) throws RemoteException
     {
+        UserDao uDao = new UserDao();
         synchronized(userList)
         {
             if(u != null)
@@ -64,7 +66,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
                     }
                 }
             }
-
+            uDao.register(u);
             userList.add(u);
             return true;
         }

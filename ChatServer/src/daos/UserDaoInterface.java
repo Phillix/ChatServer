@@ -6,6 +6,7 @@
 package daos;
 
 import business.User;
+import java.util.ArrayList;
 
 /**
  *
@@ -16,4 +17,5 @@ public interface UserDaoInterface {
     public int checkUname(String username);
     public int register(User u);
     public User logIn(String email, String password);
+    public ArrayList<User> getUsers();
 }
