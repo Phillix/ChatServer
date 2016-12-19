@@ -31,7 +31,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
             {
                 for(ChatRoomClientInterface client : clientList)
                 {
-                    client.newMessageNotification("stuff: " + m);
+                    client.newMessageNotification("stuff: " + m.toString());
                 }
             }
         }
