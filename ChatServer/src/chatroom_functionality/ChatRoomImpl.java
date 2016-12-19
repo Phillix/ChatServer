@@ -23,17 +23,15 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     @Override
     public boolean addMessage(Message m) throws RemoteException {
         boolean added = false;
-        synchronized(chatRoomMessages)
-        {
+        synchronized(chatRoomMessages) {
             added = chatRoomMessages.add(m);
         }
-        if(added)
-        {
+        if(added && clientList.size() > 0) {
             synchronized(clientList)
             {
                 for(ChatRoomClientInterface client : clientList)
                 {
-                    client.newQuoteNotification(m.getAuthor() + ": " + m.getText());
+                    client.newMessageNotification("stuff: " + m.toString());
                 }
             }
         }
@@ -44,42 +42,37 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     @Override
     public Message getMessage() throws RemoteException {
         Random rand = new Random();
-        synchronized(chatRoomMessages)
-        {
+        synchronized(chatRoomMessages) {
             int choice = rand.nextInt(chatRoomMessages.size());
             return chatRoomMessages.get(choice);
         }
     }
     
     @Override
-    public boolean register(User u) throws RemoteException
-    {
+    public boolean register(User u) throws RemoteException {
         UserDao uDao = new UserDao();
-        synchronized(userList)
-        {
-            if(u != null)
-            {
-                for(User user : userList)
-                {
-                    if(u.getUsername().equals(user.getUsername()))
-                    {
+        
+        if(u != null && uDao.checkUname(u.getUsername()) != 0) {
+            uDao.register(u);
+            synchronized(userList) {
+                for(User user : userList) {
+
+                    if(u.getUsername().equals(user.getUsername())) {
                         return false;
                     }
                 }
+                userList.add(u);
+                return true;
             }
-            uDao.register(u);
-            userList.add(u);
-            return true;
-        }
+        }    
+        return false;
     }
     
     @Override
-    public boolean login(User u) throws RemoteException
-    {
-        synchronized(userList)
-        {
-            if(u != null && userList.contains(u))
-            {
+    public boolean login(User u) throws RemoteException {
+        synchronized(userList) {
+            
+            if(u != null && userList.contains(u)) {
                 return true;
             }
             return false;
@@ -88,10 +81,8 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
 
     @Override
     public boolean registerForCallback(ChatRoomClientInterface client) throws RemoteException {
-        synchronized(clientList)
-        {
-            if(client != null && !clientList.contains(client))
-            {
+        synchronized(clientList) {
+            if(client != null && !clientList.contains(client)) {
                 clientList.add(client);
                 return true;
             }
@@ -101,8 +92,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
 
     @Override
     public boolean unregisterForCallback(ChatRoomClientInterface client) throws RemoteException {
-        synchronized(clientList)
-        {
+        synchronized(clientList) {
             if(client != null && clientList.contains(client))
             {
                 clientList.remove(client);

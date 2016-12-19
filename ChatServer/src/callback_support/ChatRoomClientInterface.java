@@ -5,5 +5,5 @@ import java.rmi.RemoteException;
 
 public interface ChatRoomClientInterface extends Remote
 {
-    public void newQuoteNotification(String newQuote) throws RemoteException; 
+    public void newMessageNotification(String newMessage) throws RemoteException; 
 }

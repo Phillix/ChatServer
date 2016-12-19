@@ -6,8 +6,8 @@ import callback_support.ChatRoomClientInterface;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface ChatRoomInterface extends Remote
-{
+public interface ChatRoomInterface extends Remote {
+        
     public boolean addMessage(Message m) throws RemoteException;
     public Message getMessage() throws RemoteException;
     
