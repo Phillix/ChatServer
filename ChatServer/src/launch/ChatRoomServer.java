@@ -1,5 +1,6 @@
 package launch;
 
+import business.User;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -18,7 +19,6 @@ public class ChatRoomServer {
     public static void main(String[] args) {
         try {
             ChatRoomImpl chatRoomObject = new ChatRoomImpl();
-            
             int portNum = 7777;
             startRegistry(portNum);
             

@@ -112,18 +112,18 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
         }
     }
     
-    @Override
-    public boolean populateUserList() {
-    
-        UserDao uDao = new UserDao();
-        ArrayList<User> dbUserList = uDao.getUsers();
-        if(dbUserList != null && dbUserList.size() > 0) {
-            synchronized(userList) {
-                userList.addAll(dbUserList);
-                return true;
-            }
-        }
-        return false;
-    }
+//    @Override
+//    public boolean populateUserList() {
+//    
+//        UserDao uDao = new UserDao();
+//        ArrayList<User> dbUserList = uDao.getUsers();
+//        if(dbUserList != null && dbUserList.size() > 0) {
+//            synchronized(userList) {
+//                userList.addAll(dbUserList);
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
 }

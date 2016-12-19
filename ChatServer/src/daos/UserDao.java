@@ -80,14 +80,16 @@ public class UserDao extends Dao implements UserDaoInterface {
     public int register(User u) {
         Connection con       = null;
         PreparedStatement ps = null;
+        UserSecurity ms      = new UserSecurity();
 
         try {
             con          = getConnection();
-            String query = "INSERT INTO " + TABLE_NAME + " (" + PASSWORD + ", " + USER_NAME  + ")";
+            String query = "INSERT INTO " + TABLE_NAME + " (" + USER_NAME + ", " + PASSWORD  + 
+                    ") VALUES (?, ?)";
 
             ps = con.prepareStatement(query);
-            ps.setString(1, u.getPassword());
-            ps.setString(2, u.getUsername());
+            ps.setString(1, u.getUsername());
+            ps.setString(2, ms.hash(u.getPassword().toCharArray()));
 
             if (ps.executeUpdate() > 0)
                 return SUCCESS; //It successfully inserted into the database
