@@ -31,7 +31,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
             {
                 for(ChatRoomClientInterface client : clientList)
                 {
-                    client.newMessageNotification("stuff: " + m.toString());
+                    client.newMessageNotification(m.getAuthor() + ": " + m.getText());
                 }
             }
         }
@@ -67,16 +67,41 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
         }    
         return false;
     }
-    
+    /**
+     * @author Phil
+     * takes the username and password of a user
+     * checks those details against the database
+     * if that user exists it is instantiated to u
+     * if the user is not contained in the list they are added
+     * if they are added a notification gets sent to all clients to notify them
+     * @param u The user to attempt log in with
+     * @return boolean indicating success of login
+     * @throws RemoteException 
+     */
     @Override
     public boolean login(User u) throws RemoteException {
-        synchronized(userList) {
-            
-            if(u != null && userList.contains(u)) {
-                return true;
+        boolean added = false;
+        UserDao uDao = new UserDao();
+        if(u != null) {
+            u = uDao.logIn(u.getUsername(), u.getPassword());
+            if(u != null) {
+                synchronized(userList) {
+                    if(!userList.contains(u)) {
+                        added = userList.add(u);
+                    }
+                }
+                if(added && clientList.size() > 0) {
+                    synchronized(clientList)
+                    {
+                        for(ChatRoomClientInterface client : clientList)
+                        {
+                            client.newLoginNotification(u.getUsername() + " has logged in!");
+                        }
+                    }
+                }
             }
-            return false;
         }
+        return added;
     }
 
     @Override

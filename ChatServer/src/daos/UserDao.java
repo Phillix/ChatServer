@@ -10,7 +10,7 @@ import security.UserSecurity;
 
 /**
  * The UserDao class is used for communicating with the user table in the database
- * @author Phillix
+ * @author Phil
  */
 
 public class UserDao extends Dao implements UserDaoInterface {
@@ -119,12 +119,12 @@ public class UserDao extends Dao implements UserDaoInterface {
 
     /**
      * Used for logging in a user
-     * @param email String email to check against the database
+     * @param username String username to check against the database
      * @param password String password to check against the database
      * @return user object based on successful login, returns null Users object if not found
      */
     @Override
-    public User logIn(String email, String password) {
+    public User logIn(String username, String password) {
 
         Connection con       = null;
         PreparedStatement ps = null;
@@ -136,7 +136,7 @@ public class UserDao extends Dao implements UserDaoInterface {
             con          = getConnection();
             String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USER_NAME + " = ?";
             ps           = con.prepareStatement(query);
-            ps.setString(1, email);
+            ps.setString(1, username);
             rs = ps.executeQuery();
 
             if(rs.next()) {

@@ -16,6 +16,6 @@ public interface UserDaoInterface {
     
     public int checkUname(String username);
     public int register(User u);
-    public User logIn(String email, String password);
+    public User logIn(String username, String password);
     public ArrayList<User> getUsers();
 }
