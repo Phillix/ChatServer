@@ -22,20 +22,18 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
 
     @Override
     public boolean addMessage(Message m) throws RemoteException {
-        boolean added = false;
-        synchronized(chatRoomMessages) {
-            added = chatRoomMessages.add(m);
-        }
-        if(added && clientList.size() > 0) {
+        
+        if(m != null && clientList.size() > 0) {
             synchronized(clientList)
             {
                 for(ChatRoomClientInterface client : clientList)
                 {
                     client.newMessageNotification(m.getAuthor() + ": " + m.getText());
+                    return true;
                 }
             }
         }
-        return added;
+        return false;
     }
 
     //may not need this method
