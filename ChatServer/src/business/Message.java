@@ -3,8 +3,7 @@ package business;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Message implements Serializable
-{
+public class Message implements Serializable {
     private String text;
     private String author;
 

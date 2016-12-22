@@ -1,55 +1,103 @@
 package chatroom_functionality;
 
 import business.Message;
+import business.PrivateMessage;
 import business.User;
 import callback_support.ChatRoomClientInterface;
+import daos.PrivateMessageDao;
 import daos.UserDao;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
-public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterface
-{
-    private final ArrayList<Message> chatRoomMessages = new ArrayList();
+
+//server
+public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterface {
+    private final ArrayList<PrivateMessage> privateMessages = new ArrayList();
     private final ArrayList<User> userList  = new ArrayList();
-    private final ArrayList<ChatRoomClientInterface> clientList = new ArrayList();
+    private final HashMap<String,ChatRoomClientInterface> clientList = new HashMap();
     
-    public ChatRoomImpl() throws RemoteException
-    {
+    public ChatRoomImpl() throws RemoteException {
         
+    }
+    
+    @Override
+    public ArrayList<String> getLoggedUsers(String username) throws RemoteException {
+        
+        if(userList.size() > 0) {
+            synchronized(userList) {
+                return userList.stream()
+                        .map(u -> u.getUsername())
+                        .filter(name -> !name.equals(username))
+                        .collect(Collectors.toCollection(ArrayList::new));
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public ArrayList<PrivateMessage> getPrivateMessageHistory(String username, String friendName) throws RemoteException {
+        
+        PrivateMessageDao pmDao = new PrivateMessageDao();
+        if(username != null && friendName != null) {
+            ArrayList<PrivateMessage> pms = pmDao.getConversation(username, friendName);
+            if(pms != null && pms.size() > 0) {
+                Collections.sort(pms);
+                return pms;
+            }
+        } 
+        return null;
     }
 
     @Override
     public boolean addMessage(Message m) throws RemoteException {
-        
+    
         if(m != null && clientList.size() > 0) {
-            synchronized(clientList)
-            {
-                for(ChatRoomClientInterface client : clientList)
-                {
+            synchronized(clientList) {
+                for(ChatRoomClientInterface client : clientList.values()) {
                     client.newMessageNotification(m.getAuthor() + ": " + m.getText());
-                    return true;
                 }
+                return true;
             }
         }
         return false;
     }
-
-    //may not need this method
+    
     @Override
-    public Message getMessage() throws RemoteException {
-        Random rand = new Random();
-        synchronized(chatRoomMessages) {
-            int choice = rand.nextInt(chatRoomMessages.size());
-            return chatRoomMessages.get(choice);
+    public boolean addPrivateMessage(PrivateMessage pm) throws RemoteException {
+    
+        boolean added = false;
+        if(pm != null) {
+            PrivateMessageDao pmDao = new PrivateMessageDao();
+            synchronized(privateMessages) {
+                privateMessages.add(pm);
+                Collections.sort(privateMessages);
+            }
+            if(pmDao.addMsg(pm) == 0) {
+                added = true;
+            }  
         }
-    }
+        if(pm != null && added && clientList.size() > 0) {
+            synchronized(clientList) {
+                for(String username : clientList.keySet()) {
+                    if(username.equals(pm.getReciever())) {
+                        clientList.get(username).newPrivateMessageNotification(pm.getAuthor() + ": " + pm.getText());
+                    } else if(username.equals(pm.getAuthor())) {
+                        clientList.get(username).newPrivateMessageNotification("To " + pm.getReciever()+ ": " + pm.getText());
+                    }
+                }
+            }
+        }
+        return added;
+    }    
     
     @Override
     public boolean register(User u) throws RemoteException {
         UserDao uDao = new UserDao();
-        
+        boolean added = false;
         if(u != null && uDao.checkUname(u.getUsername()) != 0) {
             uDao.register(u);
             synchronized(userList) {
@@ -59,11 +107,18 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
                         return false;
                     }
                 }
-                userList.add(u);
-                return true;
+                added = userList.add(u);
             }
+            if(added && clientList.size() > 0) {
+                    synchronized(clientList) {
+                        for(ChatRoomClientInterface client : clientList.values())
+                        {
+                            client.newLoginNotification(u.getUsername());
+                        }
+                    }
+                }
         }    
-        return false;
+        return added;
     }
     /**
      * @author Phil
@@ -91,9 +146,9 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
                 if(added && clientList.size() > 0) {
                     synchronized(clientList)
                     {
-                        for(ChatRoomClientInterface client : clientList)
+                        for(ChatRoomClientInterface client : clientList.values())
                         {
-                            client.newLoginNotification(u.getUsername() + " has logged in!");
+                            client.newLoginNotification(u.getUsername());
                         }
                     }
                 }
@@ -103,10 +158,10 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     }
 
     @Override
-    public boolean registerForCallback(ChatRoomClientInterface client) throws RemoteException {
+    public boolean registerForCallback(String username, ChatRoomClientInterface client) throws RemoteException {
         synchronized(clientList) {
-            if(client != null && !clientList.contains(client)) {
-                clientList.add(client);
+            if(client != null && !clientList.values().contains(client)) {
+                clientList.put(username, client);
                 return true;
             }
             return false;
@@ -114,29 +169,35 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     }
 
     @Override
-    public boolean unregisterForCallback(ChatRoomClientInterface client) throws RemoteException {
+    public boolean unregisterForCallback(String username, ChatRoomClientInterface client) throws RemoteException {
         synchronized(clientList) {
-            if(client != null && clientList.contains(client))
-            {
-                clientList.remove(client);
+            if(client != null && username != null && clientList.values().contains(client)) {
+                
+                clientList.remove(username);
                 return true;
             }
             return false;
         }
     }
     
-//    @Override
-//    public boolean populateUserList() {
-//    
-//        UserDao uDao = new UserDao();
-//        ArrayList<User> dbUserList = uDao.getUsers();
-//        if(dbUserList != null && dbUserList.size() > 0) {
-//            synchronized(userList) {
-//                userList.addAll(dbUserList);
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+    @Override
+    public boolean logout(User u) throws RemoteException {
+        boolean removed = false;
+        if(u != null) {
+            synchronized(userList) {
+                if(userList.contains(u)) {
+                    removed = userList.remove(u);
+                }
+            }
+            if(removed && clientList.size() > 0) {
+                    synchronized(clientList) {
+                        for(ChatRoomClientInterface client : clientList.values()) {
+                            client.newLogoutNotification(u.getUsername());
+                        }
+                    }
+                }
+        }
+        return removed;
+    }
 
 }
