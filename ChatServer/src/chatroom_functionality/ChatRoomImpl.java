@@ -27,7 +27,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     @Override
     public ArrayList<String> getLoggedUsers(String username) throws RemoteException {
         
-        if(userList.size() > 0) {
+        if(userList.size() > 0 && username != null) {
             synchronized(userList) {
                 return userList.stream()
                         .map(u -> u.getUsername())
@@ -72,22 +72,26 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
         boolean added = false;
         if(pm != null) {
             PrivateMessageDao pmDao = new PrivateMessageDao();
-            synchronized(privateMessages) {
-                privateMessages.add(pm);
-                Collections.sort(privateMessages);
-            }
             if(pmDao.addMsg(pm) == 0) {
                 added = true;
             }  
         }
         if(pm != null && added && clientList.size() > 0) {
+            boolean sent = false;
             synchronized(clientList) {
                 for(String username : clientList.keySet()) {
                     if(username.equals(pm.getReciever())) {
                         clientList.get(username).newPrivateMessageNotification(pm.getAuthor() + ": " + pm.getText());
+                        sent = true;
                     } else if(username.equals(pm.getAuthor())) {
                         clientList.get(username).newPrivateMessageNotification("To " + pm.getReciever()+ ": " + pm.getText());
                     }
+                }
+            }
+            if(!sent) {
+                synchronized(privateMessages) {
+                    privateMessages.add(pm);
+                    Collections.sort(privateMessages);
                 }
             }
         }
@@ -127,20 +131,21 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
      * if that user exists it is instantiated to u
      * if the user is not contained in the list they are added
      * if they are added a notification gets sent to all clients to notify them
-     * @param u The user to attempt log in with
+     * @param dbUser The user to attempt log in with
      * @return boolean indicating success of login
      * @throws RemoteException 
      */
     @Override
     public boolean login(User u) throws RemoteException {
+        
         boolean added = false;
         UserDao uDao = new UserDao();
         if(u != null) {
-            u = uDao.logIn(u.getUsername(), u.getPassword());
-            if(u != null) {
+            User dbUser = uDao.logIn(u.getUsername(), u.getPassword());
+            if(dbUser != null) {
                 synchronized(userList) {
-                    if(!userList.contains(u)) {
-                        added = userList.add(u);
+                    if(!userList.contains(dbUser)) {
+                        added = userList.add(dbUser);
                     }
                 }
                 if(added && clientList.size() > 0) {
@@ -148,7 +153,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
                     {
                         for(ChatRoomClientInterface client : clientList.values())
                         {
-                            client.newLoginNotification(u.getUsername());
+                            client.newLoginNotification(dbUser.getUsername());
                         }
                     }
                 }
@@ -159,13 +164,32 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
 
     @Override
     public boolean registerForCallback(String username, ChatRoomClientInterface client) throws RemoteException {
+        ArrayList<PrivateMessage> newMsgs;
+        synchronized(privateMessages) {
+            newMsgs = privateMessages.stream()
+                    .filter(pm -> pm.getReciever().equals(username))
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+        boolean added = false;
+        boolean sent = false;
         synchronized(clientList) {
             if(client != null && !clientList.values().contains(client)) {
                 clientList.put(username, client);
-                return true;
+                added =  true;
             }
-            return false;
+            if(added && newMsgs != null && newMsgs.size() > 0) {
+                for(PrivateMessage pm : newMsgs) {
+                    clientList.get(username).newPrivateMessageNotification(pm.getAuthor() + ": " + pm.getText());
+                }
+                sent = true;
+            }
         }
+        if(sent) {
+            synchronized(privateMessages) {
+                privateMessages.removeAll(newMsgs);
+            }
+        }
+        return added;
     }
 
     @Override
@@ -182,6 +206,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
     
     @Override
     public boolean logout(User u) throws RemoteException {
+        
         boolean removed = false;
         if(u != null) {
             synchronized(userList) {
