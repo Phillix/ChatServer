@@ -15,8 +15,9 @@ import java.util.ArrayList;
 /**
  *
  * @author Phillix
+ * Dao class to handle PrivateMessages to and from the database
  */
-public class PrivateMessageDao extends Dao {
+public class PrivateMessageDao extends Dao implements PrivateMessageDaoInterface {
 
     private final String TABLE_NAME  = "messages";
     private final String ID          = "id";

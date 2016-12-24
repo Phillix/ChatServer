@@ -9,7 +9,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import chatroom_functionality.ChatRoomImpl;
 
-
+/**
+ * 
+ * A class to handle starting a registry and putting the Remote Object into the registry
+ */
 public class ChatRoomServer {
 
     /**
@@ -17,6 +20,7 @@ public class ChatRoomServer {
      */
     public static void main(String[] args) {
         try {
+            //The remote Object
             ChatRoomImpl chatRoomObject = new ChatRoomImpl();
             int portNum = 7777;
             startRegistry(portNum);

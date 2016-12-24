@@ -171,35 +171,34 @@ public class UserDao extends Dao implements UserDaoInterface {
     }
     
     /**
-     * Used for retrieving all users
-     * @return a Collection of successful User matches
+     * Used for checking the validity of a username
+     * for use with private messaging to confirm if a recipient is valid
+     * @param username the username to check
+     * @return boolean indicating if this user exists
      */
     @Override
-    public ArrayList<User> getUsers() {
+    public boolean isValidUsername(String username) {
         
         Connection con       = null;
         PreparedStatement ps = null;
         ResultSet rs         = null;
-        User u               = null;
-        ArrayList<User> users;
-
+        
         try {
 
             con = getConnection();
-            ps = con.prepareStatement("SELECT * FROM " + TABLE_NAME);
+            ps = con.prepareStatement("SELECT " + USER_NAME + 
+                    " FROM " + TABLE_NAME + 
+                    " WHERE " + USER_NAME + " = ?");
+            ps.setString(1, username);
             rs = ps.executeQuery();
-            users = new ArrayList<>();
-
-            while(rs.next()) {
-                u = new User();
-                u.setUsername(rs.getString(USER_NAME));
-                u.setPassword(PASSWORD);
-                users.add(u);
+            
+            if(rs.next()) {
+                return true;
             }
         }
         catch(Exception e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
         finally {
             try {
@@ -216,9 +215,9 @@ public class UserDao extends Dao implements UserDaoInterface {
             catch(SQLException e) {
                 e.printStackTrace();
                 
-                return null;
+                return false;
             }
         }
-        return users;
+        return false;
     }
 }    

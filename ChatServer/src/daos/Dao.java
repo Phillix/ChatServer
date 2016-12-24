@@ -3,14 +3,14 @@ package daos;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 
 /**
  *
  * @author Phillix
+ * DAO super class, used for handling connection to the database
+ * as well as containing constant values to be used in method returns
  */
 public class Dao {
-    private DataSource dataSource;
     
     // Integer returns for DAO's
     protected static final int SUCCESS       = 0;

@@ -3,6 +3,10 @@ package callback_support;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
+/**
+ * 
+ * @author Phillix
+ */
 public interface ChatRoomClientInterface extends Remote
 {
     //server

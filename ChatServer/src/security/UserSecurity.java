@@ -10,12 +10,13 @@ import javax.crypto.spec.PBEKeySpec;
 /**
  *
  * @author Phillix
+ * A class to handle the encryption of user passwords
  */
 public class UserSecurity {
 
     /**
      *
-     * @param   password
+     * @param   password the password to encrypt
      * @return = String combining hashed password and salt 
      */
     public String hash(char[] password) {
