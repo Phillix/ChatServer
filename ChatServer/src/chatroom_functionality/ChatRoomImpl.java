@@ -54,6 +54,12 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoomInterfa
         return null;
     }
     
+    /**
+     * A method to check if the given username exists in the database
+     * @param username the username to check
+     * @return true if that name exists, false otherwise
+     * @throws RemoteException 
+     */
     @Override
     public boolean isValidUser(String username) throws RemoteException {
         
